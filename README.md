@@ -1,5 +1,5 @@
 # code (Matlab, R, Python)
-This repo contains code that I've created for my a variety of data analyses steps:
+This repo contains code that I've created for several steps in data analysis:
 
 (i) pre-processing
 (ii) 1st- and 2nd level analyses
