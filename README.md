@@ -1,7 +1,7 @@
 # code (Matlab, R, Python)
 This repo contains code that I've created for my a variety of data analyses steps:
 
-(i) pre-processing \n
+(i) pre-processing\n
 (ii) 1st- and 2nd level analyses \n
 (iii) plotting \n
 
