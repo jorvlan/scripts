@@ -6,7 +6,9 @@ Code includes:
 (ii) 1st- and 2nd level analyses
 (iii) plotting
 
-I will soon upload MATLAB code that enables import, pre-processing and analysis of both Pupil Labs and EyeLink pupillometry (pupil diameter) data. I'm also working on Python code that follows best open science practices for publication ready plotting.
+To be added soon: 
+I'm currently working on Python code (Jupyter Notebook) that follows best open science practices for publication ready plotting.
+
 
 
 
