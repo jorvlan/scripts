@@ -7,7 +7,7 @@ Code includes:
 (iii) plotting
 
 To be added soon: 
-I'm currently working on Python code (Jupyter Notebook) that follows best open science practices for publication ready plotting.
+I'm currently working on Python code (Jupyter Notebook) that follows best open science practices for publication ready plotting with the seaborn library.
 
 
 
