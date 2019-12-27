@@ -2,4 +2,6 @@ The order of which you need to use these scripts to analyse pupil diameter data 
 
 1. Use 'Reformat_data_for_Interpol_TOS_Pupil_Labs.m' to reformat the raw data output.
 
-2. Use ' 
+2. Use 'interpol_convert_IDF_TXT_TOS_Pupil_Labs.m' to create a .mat structure than can be read by the interpol tooblox.
+
+3. Use '
