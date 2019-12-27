@@ -6,4 +6,8 @@ The order of which you need to use these scripts to analyse pupil diameter data 
 
 3. Use 'pupil_1st_level_TOS_Pupil_Labs.m' to analyze pupil diameter data at the individual subject level.
 
-4. Use '
+4. Use 'Pupil_2ndlevel_initialize.m' to initialize the .mat data structure for group analysis (statistics).
+
+To be added: 
+
+5. Use 'pupil_2nd_level.m' to visually inspect the group descriptives (average pupil diameter, timeseries of the pupil diameter). 
