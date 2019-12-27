@@ -4,4 +4,6 @@ The order of which you need to use these scripts to analyse pupil diameter data 
 
 2. Use 'interpol_convert_IDF_TXT_TOS_Pupil_Labs.m' to create a .mat structure than can be read by the interpol tooblox.
 
-3. Use '
+3. Use 'pupil_1st_level_TOS_Pupil_Labs.m' to analyze pupil diameter data at the individual subject level.
+
+4. Use '
