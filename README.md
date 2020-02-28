@@ -1,4 +1,4 @@
-### Figure produced with python code for pupil diameter analysis
+# Example figure, made with Python
 ![timecourse example](Python/Pupil%20labs%20pilot%20data.png)
 
 # code (Matlab, R, Python)
