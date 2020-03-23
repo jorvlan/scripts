@@ -16,14 +16,16 @@ function pupdat = interpol_convert_IDF_TXT_TOS_Pupil_Labs(fname,trialwindow,tria
 %Settings
 
 %Define channels that are converted into the mat-file (if they exist)
-ConvertChannels = {'Raw X','Raw Y','Pupil'};
+%ConvertChannels = {'Raw X','Raw Y','Pupil'};
+ConvertChannels = {'norm_pos_x','norm_pos_y','diameter'};
 
 %Define event channel name (ie column name in the text file to be converted)
 EventChannelName = 'Triggers';
 
 %Maximum number of columns in the converted datasets. It seems 18 is
 %sufficient
-maxChannels = 5; 
+maxChannels = 8;
+%maxChannels = 5; 
 
 
 %--------------------------------------------------------------------------
@@ -79,9 +81,9 @@ end
 %Set the output file name ON MAC
 %%% outfname=[fname(1:end-3),'mat']; %output file name
 %%% replaced by next 3 lines (output data in a different folder)
-outfname=[fname(46:end-12),'.mat']; %output file name
-outfpath=strcat('/Volumes/BMRI/CRU/Parkinsons/Jordy/analysis/',outfname(1:3),'/'); %%Check this path structure because of adding 'pupil' folder
-outfname=fullfile(outfpath,outfname); %full outputfile name, incl. path
+outfname=[fname(85:end-12),'.mat']; %output file name
+outfpath=strcat(fpath,outfname); %%Check this path structure because of adding 'pupil' folder
+outfname=fullfile(outfpath); %full outputfile name, incl. path
 disp(['Converting ',fname,' to ',outfname,'.'])
 
 %Set the output file name ON WINDOWS
@@ -128,7 +130,7 @@ sR = 120;
 % end
 
 %Find the line with channel names (assumed to start with "Time")
-TimeLine = find(strcmp(imvar{1},'Time'));
+TimeLine = find(strcmp(imvar{1},'timestamp'));
 if ~(TimeLine>0)
     error('Cannot convert - found no line starting with "Time"');
 end
