@@ -1,4 +1,4 @@
-# Example figure, made with Python
+# Example figures made with Python
 ![example_with_filter](Python/example_with_filter.png)
 ![timecourse example](Python/Pupil%20labs%20pilot%20data.png)
 
@@ -10,8 +10,7 @@ Code includes:
 (ii) 1st- and 2nd level analyses
 (iii) plotting
 
-To be added soon: 
-I'm currently working on Python code (Jupyter Notebook) that follows best open science practices for publication ready plotting with the seaborn library.
+
 
 
 
