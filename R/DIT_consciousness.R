@@ -5,9 +5,12 @@ tmp <- data.frame(x=0:1, y=f(0:1))
 # Make plot object
 p <- qplot(x, y, data=tmp, xlab="Apical isolation ------------------------- Apical amplification ------------------------- Apical drive ", ylab="Consciousness") 
 p <- p + stat_function(fun=f) + theme_classic() 
+
+#Title
 p <- p + annotate("text", label = "Dendritic Integration Theory of Consciousness (Aru et al., 2020; TiCS)", x = .5, y = .3, size = 4)
 p <- p + annotate("text", label = "Apical drive - cellular mechanism of dreaming (Aru et al., 2020; PsyArxiv)", x = .5, y = .28, size = 4)
-#p <- p + annotate("text", label = HYPERLINK("Dendritic Integration Theory of Consciousness")[https://doi.org/10.1016/j.tics.2020.07.006], x = .5, y = .40, size = 6)
+
+#middle top
 p <- p + annotate("text", label = "apical - basal coupling 'match'", x = .5, y = .23, size = 2)
 p <- p + annotate("text", label = "HO Thalamus optimal control", x = .5, y = .22, size = 2)
 p <- p + annotate("text", label = "Top-down - bottom-up integration", x = .5, y = .21, size = 2)
@@ -37,4 +40,4 @@ p + theme(axis.text = element_blank(),
           axis.ticks = element_blank())
 
 #ggsave("p_small.tiff", units='in', dpi=300)
-ggsave("p_png.png", units='in')
+ggsave("p_png.png", units='in', dpi=300)
