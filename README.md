@@ -1,10 +1,7 @@
 # code (Matlab, R, Python)
-This repo contains code that I've created for several data analysis techniques.
+This repo contains code I created for a variety of purposes: (1) data analysis, (2) blogposts website, (3), visualizations
+For any quesitons, please send me a message.
 
-Code includes:
-(i) pre-processing
-(ii) 1st- and 2nd level analyses
-(iii) plotting
 
 
 
