@@ -1,0 +1,486 @@
+---
+title: "Project Tracker"
+output: pdf_document
+classoption: landscape
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_knit$set(root.dir = '~/Dropbox/Professional/projects/_overview/')
+```
+
+```{r packages, warning=FALSE, message=FALSE, include=FALSE}
+packages =  c("tidyverse","ggplot2","here","readxl","patchwork")
+
+if (length(setdiff(packages, rownames(installed.packages()))) > 0) {
+  install.packages(setdiff(packages, rownames(installed.packages())), 
+                   repos = "http://cran.us.r-project.org")
+}
+invisible(lapply(packages, library, character.only = TRUE))
+```
+
+```{r NYT theme, echo=FALSE}
+nytimes_theme <- function(...) {
+    
+    ## Colos — stick with the ggplot2() greys
+    c_bg    <- "white"
+    c_grid  <- "grey80"
+    c_btext <- "grey5"
+    c_mtext <- "grey30"
+    
+    # Begin construction of chart
+    ggplot2::theme_bw(base_size = 12, base_family = "Helvetica") +
+        
+        # Region
+        ggplot2::theme(
+            panel.background = ggplot2::element_rect(fill = c_bg, color = c_bg),
+            plot.background  = ggplot2::element_rect(fill = c_bg, color = c_bg),
+            panel.border     = ggplot2::element_rect(color = c_bg)
+        ) +
+        
+        # Grid
+        ggplot2::theme(
+            panel.grid.major = ggplot2::element_line(color = c_grid, size = .25),
+            panel.grid.minor = ggplot2::element_blank(),
+            axis.ticks       = ggplot2::element_blank()
+        ) +
+        
+        # Legend
+        ggplot2::theme(
+            legend.position = c(0, 1),
+            legend.justification = c(0, 1),
+            legend.key           = ggplot2::element_rect(fill = NA, color = NA),
+            legend.background    = ggplot2::element_rect(fill = "transparent", color = NA),
+            legend.text          = ggplot2::element_text(color = c_mtext)
+        ) +
+        
+        # Titles, labels, etc.
+        ggplot2::theme(
+            plot.title     = ggplot2::element_text(
+                color = c_btext,
+                vjust = 1.25,
+                face = "bold",
+                size = 18
+            ),
+            axis.text      = ggplot2::element_text(size = 10, color = c_mtext),
+            axis.title.x   = ggplot2::element_text(
+                size = 12,
+                color = c_mtext,
+                hjust = 0.5
+            ),
+            axis.title.y   = ggplot2::element_text(
+                size = 12,
+                color = c_mtext,
+                hjust = 0.5
+            )
+        ) +
+        # Facets
+        ggplot2::theme(
+            strip.background = ggplot2::element_rect(fill = c_bg, color = c_btext),
+            strip.text = ggplot2::element_text(size = 10, color = c_btext)
+        ) +
+        
+        # Plot margins
+        ggplot2::theme(plot.margin = ggplot2::unit(c(0.35, 0.2, 0.3, 0.35), "cm")) +
+        
+        # Additionals
+        ggplot2::theme(...)
+}
+```
+
+```{r Set Up Pubs, results='hide', message=FALSE, warning=FALSE, echo=FALSE}
+## Read raw data ----
+pubs <- read_excel("./lab_tracker.xlsx") %>% 
+  filter(!is.na(paper))
+
+## Make labels ----
+pub_labs <- pubs %>% group_by(paper) %>%
+    summarize(time = max(date_delta),
+              rejects = sum(grepl("Reject", event)),
+              desk_rejects = sum(grepl("Desk Reject", event)),
+              projectnum = first(projectnum)) %>% 
+  ungroup() %>%
+  mutate(projectnum = projectnum,
+         paper_lab = sprintf(
+            "%i days / %i rejection%s (%i desk reject%s)",
+            time, 
+            rejects, ifelse(rejects != 1, "s", ""), 
+            desk_rejects, ifelse(desk_rejects != 1, "s", ""))) %>%
+  arrange(projectnum)
+
+## Clean up ----
+pubs <- pubs %>% left_join(pub_labs) %>%
+  mutate(paper_cat = factor(paper_lab,
+                            levels = pub_labs$paper_lab,
+                            ordered = TRUE),
+         status_cat = factor(event,
+                             levels = c("No Work", 
+                                        "Analyses", 
+                                        "Writing",
+                                        "With Coauthor(s)",
+                                        "Under Review",
+                                        "Accepted"),
+                            ordered = FALSE),
+         event_cat = factor(event, 
+                            levels = c("Begin Project", 
+                                       "First Full Draft", 
+                                       "Final Draft",
+                                       "Submitted Preprint",
+                                       "Submitted Manuscript",
+                                       "Submitted Grant",
+                                       "Desk Reject", 
+                                       "Reject After Review",
+                                       "Revise and Resubmit", 
+                                       "Submitted Revision",
+                                       "Accepted", 
+                                       "Published"),
+                           ordered = FALSE),
+         y_axis = factor(counter, ordered = TRUE))
+levels(pubs$status_cat)[levels(pubs$status_cat)=="No Work"] <- NA
+
+pubs <- pubs %>%
+  mutate(color = case_when(paper %in% c("Project 1 - review",
+                                        "MLMGM",
+                                        "Longitudinal Primer",
+                                        "Two Time Points",
+                                        "LENI",
+                                        "AB-Interaction",
+                                        "Nonlinear Models") ~ "#9ebcdb",
+                           paper %in% c("LatentFC") ~ "#c00000",
+                           paper %in% c("AlphaBeta", 
+                                        "TVC Equivalence",
+                                        "Two Time Points 2") ~ "#8c54d0",
+                           paper %in% c("CamCAN",
+                                        "Secondary Data",
+                                        "Mediation",
+                                        "DYNASTI",
+                                        "Longitudinal Simulation") ~ "#3499dc",
+                           paper %in% c("Digital Exclusion",
+                                        "Situated Neuroscience",
+                                        "Multi100",
+                                        "Longitudinal Puberty",
+                                        "SECCYD") ~ "#39b092",
+                           paper %in% c("Grey Matter White Matter",
+                                        "Resilience-1",
+                                        "Resilience-2") ~ "#4adb77"
+                           ))
+
+status_cols = c("Analyses" = "firebrick2",
+                "Writing" = "steelblue2",
+                "With Coauthor(s)" = "darkseagreen2",
+                "Under Review" = "sandybrown",
+                "Accepted" = "green3")
+event_cols = c("Begin Project" = "black",
+               "First Full Draft" = "steelblue1",
+               "Final Draft" = "steelblue2",
+               "Submitted Preprint" = "purple",
+               "Submitted Manuscript" = "steelblue3",
+               "Submitted Grant" = "steelblue3",
+               "Desk Reject" = "red",
+               "Reject After Review" = "red",
+               "Revise and Resubmit" = "green3",
+               "Submitted Revision" = "steelblue4",
+               "Accepted" = "green4",
+               "Published" = "green4")
+event_shapes = c("Begin Project" = 0,
+                 "First Full Draft" = 12,
+                 "Final Draft" = 15,
+                 "Submitted Preprint" = 1,
+                 "Submitted Manuscript" = 16,
+                 "Submitted Grant" = 16,
+                 "Desk Reject" = 4,
+                 "Reject After Review" = 13,
+                 "Revise and Resubmit" = 18,
+                 "Submitted Revision" = 20,
+                 "Accepted" = 5,
+                 "Published" = 8)
+```
+
+# Project Timeline
+```{r Projects by Date, echo=FALSE, warning=FALSE, fig.align='center', fig.width=18, fig.height=8}
+importantDates = data.frame(
+  event = c("Defended Dissertation",
+            "Pandemic Lockdowns Began",
+            "Started Postdoc at Rugters",
+            "Contacted Patrick",
+            "Started Postdoc at Donders",
+            "Moved to the Netherlands",
+            "Job Applications",
+            "Moved to Leiden",
+            "Started Position at Leiden",
+            "Moved to Utrecht"), 
+  date = as.Date(
+    c("2020-02-14",
+      "2020-03-12",
+      "2020-06-01",
+      "2020-10-31",
+      "2021-06-01",
+      "2021-09-05",
+      "2022-05-15",
+      "2022-09-01",
+      "2022-10-01",
+      "2023-05-01"), 
+    origin = min(pubs$date, na.rm=TRUE)))
+
+
+timeline <- 
+  ggplot() +
+  geom_line(data = pubs, 
+            aes(x = as.Date(date), 
+                y = fct_reorder(paper, projectnum, .desc = TRUE), 
+                color = status_cat, group = paper_cat)) + 
+  geom_point(data = pubs %>% drop_na(event_cat),
+             aes(x = as.Date(date), 
+                 y = fct_reorder(paper, projectnum, .desc = TRUE),
+                 shape = event_cat),
+             size = 5, alpha = 1, 
+             color = event_cols[pubs %>% 
+                                  drop_na(event_cat) %>% 
+                                  pull(event_cat)]) + 
+  nytimes_theme(legend.position = "bottom",
+                legend.justification = .5) +
+  scale_x_date(date_breaks = "2 month", date_minor_breaks = "1 week",
+             date_labels = "%b %y") +
+  scale_shape_manual("Event", 
+                     values = 
+                       event_shapes[names(event_shapes) %in% pubs$event_cat]) + 
+  scale_color_manual("Status", 
+                     values = 
+                       status_cols[names(status_cols) %in% pubs$status_cat]) +
+  labs(x = element_blank(), y = element_blank(), title = "PhD Timeline") +
+  geom_vline(xintercept = as.numeric(importantDates$date),
+             linetype = 4, colour = "grey75") + 
+  geom_text(aes(x = importantDates$date - 5, 
+                label = importantDates$event, 
+                y = 1), colour="grey35", angle = 90, size=2.5, hjust=0) +
+  theme(axis.text.y = 
+          element_text(face=ifelse(rev(pubs %>% 
+                                     group_by(projectnum) %>% 
+                                     arrange(projectnum) %>%
+                                     summarize(author = first(author)) %>% 
+                                     pull(author) %in% 
+                                     c("First","Solo","Grant","Senior")), 
+                                   "bold", "italic"),
+                       color= rev(pubs %>% 
+                                    group_by(projectnum) %>% 
+                                    arrange(projectnum) %>%
+                                    summarize(color = first(color)) %>% 
+                                    pull(color))))
+
+timeline
+```
+
+```{r}
+#| warning: false
+#| message: false
+#| echo: false
+
+ggsave("./_figures/_paper-Timeline.png",
+       timeline,
+       width = 22,
+       height = 5,
+       scale = 1.25,
+       dpi = 'retina')
+```
+
+
+```{r Key Projects by Date, echo=FALSE, warning=FALSE, fig.align='center', fig.width=18, fig.height=6}
+key_pubs = c("BrainTime",
+             "MLMGM",
+             "Longitudinal Primer",
+             "Two Time Points",
+             "LENI",
+             "Nonlinear Models",
+             "AlphaBeta", 
+             "TVC Equivalence",
+             "AB-Interaction",
+             "Two Time Points 2",
+             "CamCAN",
+             "Mediation",
+             "DYNASTI")
+
+key.pubs <- pubs %>% filter(paper %in% key_pubs)
+
+key.timeline <- 
+  ggplot() +
+  geom_line(data = key.pubs, 
+            aes(x = as.Date(date), 
+                y = fct_reorder(paper, projectnum, .desc = TRUE), 
+                color = status_cat, group = paper_cat)) + 
+  geom_point(data = key.pubs %>% drop_na(event_cat),
+             aes(x = as.Date(date), 
+                 y = fct_reorder(paper, projectnum, .desc = TRUE),
+                 shape = event_cat),
+             size = 5, alpha = 1, 
+             color = event_cols[key.pubs %>% 
+                                  drop_na(event_cat) %>% 
+                                  pull(event_cat)]) + 
+  nytimes_theme(legend.position = "bottom",
+                legend.justification = .5) +
+  scale_x_date(date_breaks = "2 month", date_minor_breaks = "1 week",
+             date_labels = "%b %y") +
+  scale_shape_manual("Event", 
+                     values = 
+                       event_shapes[names(event_shapes) %in% key.pubs$event_cat]) + 
+  scale_color_manual("Status", 
+                     values = 
+                       status_cols[names(status_cols) %in% key.pubs$status_cat]) +
+  labs(x = element_blank(), y = element_blank(), title = "Key Project Timeline") +
+  geom_vline(xintercept = as.numeric(importantDates$date),
+             linetype = 4, colour = "grey75") + 
+  geom_text(aes(x = importantDates$date - 5, 
+                label = importantDates$event, 
+                y = 1), colour="grey35", angle = 90, size=2.5, hjust=0) +
+  theme(axis.text.y = 
+          element_text(face=ifelse(rev(key.pubs %>% 
+                                     group_by(projectnum) %>% 
+                                     arrange(projectnum) %>%
+                                     summarize(author = first(author)) %>% 
+                                     pull(author) %in% 
+                                     c("First","Solo","Grant","Senior")), 
+                                   "bold", "italic"),
+                       color= rev(key.pubs %>% 
+                                    group_by(projectnum) %>% 
+                                    arrange(projectnum) %>%
+                                    summarize(color = first(color)) %>% 
+                                    pull(color))))
+
+key.timeline
+```
+
+```{r}
+#| warning: false
+#| message: false
+#| echo: false
+
+ggsave("./_figures/_key-paper-Timeline.png",
+       key.timeline,
+       width = 22,
+       height = 5,
+       scale = 1.25,
+       dpi = 'retina')
+```
+
+
+
+<!-- ```{r} -->
+<!-- library(wesanderson) -->
+<!-- gh_waffle <- function(data) { -->
+<!--   p <- ggplot(data, aes(x = week, y = day, fill = hours)) + -->
+<!--     scale_fill_gradientn(name = "Hours", -->
+<!--                          colours = wes_palette("Zissou1",  -->
+<!--                                                100,  -->
+<!--                                                type = "continuous"), -->
+<!--                          na.value = "grey90") + -->
+<!--     geom_tile(color = "white", size = 0.7) + -->
+<!--     facet_wrap("year", ncol = 1) + -->
+<!--     scale_x_continuous( -->
+<!--       expand = c(0, 0), -->
+<!--       breaks = seq(1, 52, length = 12), -->
+<!--       labels = c( -->
+<!--         "Jan", "Feb", "Mar", "Apr", "May", "Jun", -->
+<!--         "Jul", "Aug", "Sep", "Oct", "Nov", "Dec" -->
+<!--       ) -->
+<!--     ) + -->
+<!--     theme_linedraw(base_family = "Helvetica") + -->
+<!--     theme( -->
+<!--       axis.title = element_blank(), -->
+<!--       axis.ticks = element_blank(),  -->
+<!--       axis.text.y = element_text(size = 7), -->
+<!--       panel.grid = element_blank(), -->
+<!--       legend.position = "bottom", -->
+<!--       aspect.ratio = 1/7, -->
+<!--       legend.key.width = unit(1, "cm"), -->
+<!--       strip.text = element_text(hjust = 0.00, face = "bold", size = 12) -->
+<!--     ) -->
+
+<!--   print(p) -->
+<!-- } -->
+<!-- gh_waffle(d) -->
+<!-- ``` -->
+
+
+\newpage
+# Individual Projects
+```{r Plot Pubs, results='hide', message=FALSE, warning=FALSE, echo=FALSE}
+p = list()
+pubs <- pubs %>% filter(author != "Grant")
+for (i in 1:n_distinct(pubs$paper)){
+  temp <- pubs %>% filter(paper == unique(paper)[i])
+  y_breaks <-
+    if("Accepted" %in% temp$event_cat){
+      c(0:max(temp$counter))
+    } else if ("Submitted Manuscript" %in% temp$event_cat){
+      c(0:(max(temp$counter)+1))
+    } else if ("Submitted Preprint" %in% temp$event_cat){
+      c(0:(max(temp$counter)+2))
+    } else if ("Submitted Grant" %in% temp$event_cat){
+      c(0:max(temp$counter))
+    } else {
+      c(0:4)
+    }
+  y_labels <-
+    if ("Submitted Manuscript" %in% temp$event_cat){
+      c("", "Pre-Submission","Preprint",
+        unique(temp$journal)[!is.na(unique(temp$journal))],"Published")
+    } else if ("Submitted Grant" %in% temp$event_cat){
+      c("", "Pre-Submission", unique(temp$journal)[!is.na(unique(temp$journal))])
+    } else {
+      c("", "Pre-Submission","Preprint","Journal","Published")
+    }
+  psubtitle <-
+    if ("Submitted Manuscript" %in% temp$event_cat){
+      if (first(temp$desk_rejects > 0)){
+        first(temp$paper_lab)
+      } else {
+        strsplit(first(temp$paper_lab), " \\(")[[1]][1]
+      }
+    } else {
+      strsplit(first(temp$paper_lab), " / ")[[1]][1]
+    }
+
+  p[[first(temp$paper)]] <- ggplot() +
+    geom_step(data = temp,
+              aes(x = date_delta, y = y_axis,
+                  color = status_cat, group = paper_cat)) +
+    geom_point(data = temp %>% drop_na(event_cat),
+               aes(x = date_delta, y = y_axis, shape = event_cat),
+               size = 5, alpha = 1,
+               color = event_cols[temp %>%
+                                    drop_na(event_cat) %>%
+                                    pull(event_cat)]) +
+    nytimes_theme(legend.position = "right",
+                  legend.justification = .5) +
+    scale_y_discrete("Where is the Manuscript?",
+                     breaks = y_breaks,
+                     labels = y_labels,
+                     expand = c(0, .25)) +
+    scale_shape_manual("Event",
+                       values =
+                         event_shapes[names(event_shapes) %in% temp$event_cat]) +
+    scale_color_manual("Status",
+                       values =
+                         status_cols[names(status_cols) %in% temp$status_cat]) +
+    labs(x = "Days since Project started",
+         title = first(temp$paper),
+         subtitle = psubtitle) +
+    theme(plot.title =
+            element_text(face=ifelse(rev(temp %>%
+                                           summarize(author = first(author)) %>%
+                                           pull(author) %in%
+                                           c("First","Solo","Grant","Senior")),
+                                     "bold", "italic"),
+                         color=rev(temp %>% 
+                                    summarize(color = first(color)) %>% 
+                                    pull(color))))
+
+  ggsave(paste0("_figures/",first(temp$projectnum),"-",first(temp$paper),
+                "-traj.png"),
+        p[[i]], width = 9, height = 5, scale = 1.25, dpi = 'retina')
+}
+rm(temp)
+```
+```{r Display Plots, echo=FALSE, message=FALSE, warning=FALSE, fig.align='center', fig.width=9, fig.height=5}
+for (i in 1:length(p)){print(p[[i]])}
+```
+
