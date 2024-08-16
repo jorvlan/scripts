@@ -1,0 +1,26 @@
+model{
+   
+
+#####model######
+    for (t in 2:nt) 
+    ###model for timepoint 2 onwards
+    {
+        y[t] ~ dnorm(muy[t],Ipre)  
+        ## Ipre is innovation precision
+        muy[t] <- int + phi*y[t-1] + b1*x[t] 
+        ## int is the intercept, phi is autoregressive parameters
+    }
+
+    #####priors###########
+       
+    Ipre <- inverse(Ivar) ## innovation precision
+    Ivar ~ dunif(0,500)   ## innovation variance
+
+    phi~dunif(-1,1) ## autoregression coefficient
+      b1~dnorm(0,.001) ## exogenous effect
+      b2~dnorm(0,.001) ## exogenous effect (lagged)
+    int~dnorm(50,.001) ## intercept
+        
+              
+
+}

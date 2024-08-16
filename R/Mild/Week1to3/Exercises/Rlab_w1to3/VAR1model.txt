@@ -1,0 +1,65 @@
+model{
+   
+
+#####model######
+    for (t in 2:nt) 
+    
+    ###likelihood or data model for timepoint 2 onwards
+    {
+        y[t,1:2]~dmnorm(muy[t,1:2],Ipre[1:2,1:2])
+        
+        #latent centered variables
+        z[t,1] <- y[t,1] - mu1  
+        z[t,2] <- y[t,2] - mu2
+        
+        # autoregressive equations
+        muy[t,1]<- mu1 + phi11*z[t-1,1] + phi12*z[t-1,2] 
+        muy[t,2]<- mu2 + phi22*z[t-1,2] + phi21*z[t-1,1] 
+        
+        #note: mu1 and mu2 are the means for each variable
+        # phi11 and phi22 are the autoregressive coefficients for each variable
+        # phi 12 and phi21 are the cross-lagged coefficients for each variable
+    }
+
+####timepoint 1#######
+
+    z[1,1] <- y[1,1]-mu1 ### centered score for time point 1 for variable 1.
+  z[1,2] <- y[1,2]-mu2 ### centered score for time point 1 for variable 2.
+    
+            
+####priors###########
+  
+  
+###Innovatian variance-covariance matrix, and/or precision matrix 
+  
+### prior specifications for means and regression coefficients ###
+  
+  mu1~dnorm(50,.001) ## mean
+  mu2~dnorm(3,.001) ## mean
+
+  phi11~dnorm(0,.001) ## autoregression coefficient
+    phi12~dnorm(0,.001) ## cross-lagged coefficient
+    phi21~dnorm(0,.001) ## cross-lagged coefficient
+    phi22~dnorm(0,.001) ## autoregression coefficient
+    
+### prior specifications for the covariance matrix of the innovations ###
+  
+  ## priors for the two variances:
+  Ivar1 ~ dunif(0,300) ## innovation variance y1
+    Ivar2 ~ dunif(0,300) ## innovation variance y2
+    
+    ##prior for the correlation among the innovations:
+    Icor ~ dunif(-1,1) ## innovation correlation
+    ## turning correlation into a covariance:
+    Icov <- Icor*sqrt(Ivar1)*sqrt(Ivar2) 
+    
+    ##Sticking all of the above into one covariance matrix:
+    Ivar[1,1] <- Ivar1
+  Ivar[2,2] <- Ivar2
+  Ivar[2,1] <- Icov
+  Ivar[1,2] <- Icov
+  
+    ## Turning the covariance matrix into a precision matrix:
+  Ipre <- inverse(Ivar)
+
+}

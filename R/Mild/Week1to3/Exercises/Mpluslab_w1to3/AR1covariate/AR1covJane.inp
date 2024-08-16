@@ -1,0 +1,24 @@
+TITLE:      A univariate first-order autoregressive AR(1) model 
+            for a continuous dependent variable and a covariate
+            ! Note: Everything in green behind an exclamation mark 
+            ! are comments that Mplus does not read
+
+DATA:       FILE = AR_Jane.dat;     ! data file (should be in same folder)
+
+VARIABLE:   NAMES = y z;            ! providing names to the variables
+            USEVARIABLES = y z;     ! selecting the variables for the analysis
+            LAGGED = y(1);          ! creating a lagged observed variable
+            MISSING = *;            ! specify the missing value code
+
+ANALYSIS:	ESTIMATOR = BAYES;      ! set estimator (must be Bayes for DSEM) 
+	        PROCESSORS = 2;         ! using 2 processors
+	        BITERATIONS = (2000);   ! choose number of iterations;
+                                    ! minimum is now 2000; will be more if 
+                                    ! the convergence criterion indicates
+                                    ! convergence was not reached
+
+MODEL:      y ON y&1 z;             ! specifying the lagged regression
+
+OUTPUT:     TECH1 TECH8;            ! asking additional output
+
+PLOT:       TYPE = PLOT3;           ! asking for plots

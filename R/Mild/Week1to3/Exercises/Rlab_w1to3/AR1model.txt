@@ -1,0 +1,22 @@
+model{
+   
+
+#####likelihood or data model######
+    for (t in 2:nt) 
+    ## model for timepoint 2 onwards
+    {
+        y[t]~dnorm(muy[t],Ipre) ## Ipre is the innovation precision
+        z[t] <- y[t] - mu ## z[t] are centered scores 
+        muy[t]<- mu + phi*z[t-1] ## mu is mean, phi is autoregressive parameter
+    }
+
+####timepoint 1#######
+ ## defining things needed for time point one.
+    z[1] <- y[1]-mu  
+    
+####priors###########
+    Ipre <- inverse(Ivar) ## innovation precision
+    Ivar ~dunif(0,300)   ##innovation variance
+    phi~dunif(-1,1) ## autoregression coefficient
+    mu~dnorm(50,.001) ## mean
+}
