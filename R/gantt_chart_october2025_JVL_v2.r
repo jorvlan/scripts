@@ -227,4 +227,4 @@ gantt_sydney <- ggplot(tasks_expanded, aes(x = start_date, xend = end_date,
 gantt_sydney
 
 ggsave(gantt_sydney, file = "gantt_sydney.png", 
-       dpi = 300, width = 10, height = 6, bg = "white")
+       dpi = 300, width = 7, height = 5, bg = "white")
